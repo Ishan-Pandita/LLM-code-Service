@@ -1,0 +1,62 @@
+[
+    {
+        "id": "R1",
+        "name": "Meaningful Naming",
+        "description": "Variables, functions, and classes should have meaningful names that reflect their purpose. Single-letter names are allowed only for simple loop counters.",
+        "category": "readability"
+    },
+    {
+        "id": "R2",
+        "name": "Function Size Control",
+        "description": "Each function should perform a single logical task and should not be excessively long. Fail if functions try to do multiple unrelated things or are clearly oversized.",
+        "category": "structure"
+    },
+    {
+        "id": "R3",
+        "name": "Avoid Magic Numbers",
+        "description": "Hard-coded numeric values should be replaced with named constants unless they are universally obvious (e.g., 0, 1).",
+        "category": "maintainability"
+    },
+    {
+        "id": "R4",
+        "name": "Proper Error Handling",
+        "description": "The code should handle possible error conditions or invalid inputs gracefully instead of crashing or behaving unpredictably.",
+        "category": "robustness"
+    },
+    {
+        "id": "R5",
+        "name": "No Unnecessary Global State",
+        "description": "Global variables or shared state should be avoided unless there is a clear and justified reason.",
+        "category": "architecture"
+    },
+    {
+        "id": "R6",
+        "name": "Clear Control Flow",
+        "description": "The control flow (loops, conditionals, returns) should be easy to follow and not overly complex or deeply nested.",
+        "category": "readability"
+    },
+    {
+        "id": "R7",
+        "name": "Adequate Comments and Documentation",
+        "description": "Non-obvious logic, complex steps, or important decisions should be explained using comments or documentation.",
+        "category": "documentation"
+    },
+    {
+        "id": "R8",
+        "name": "Consistent Coding Style",
+        "description": "The code should follow a consistent formatting and style (indentation, spacing, naming style) throughout the file.",
+        "category": "style"
+    },
+    {
+        "id": "R9",
+        "name": "No Redundant or Dead Code",
+        "description": "Unused variables, unreachable code, or commented-out code blocks should not be present.",
+        "category": "cleanliness"
+    },
+    {
+        "id": "R10",
+        "name": "Proper Input and Output Handling",
+        "description": "Inputs should be validated where appropriate, and outputs should be clearly formatted and meaningful to the user.",
+        "category": "usability"
+    }
+]

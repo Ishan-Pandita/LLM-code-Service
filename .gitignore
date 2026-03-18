@@ -1,0 +1,7 @@
+.env
+llm_service.egg-info
+__pycache__
+ignore
+server.log
+.agents/
+skills-lock.json

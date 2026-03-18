@@ -1,0 +1,16 @@
+# Core vLLM (includes torch)
+vllm>=0.6.0
+
+# Tokenizers and utilities
+transformers>=5.0.0
+sentencepiece>=0.1.99
+protobuf>=4.25.0
+
+# FastAPI Server
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+pydantic>=2.5.0
+pydantic-settings>=2.1.0
+
+# HTTP Client
+httpx>=0.25.0

@@ -1,0 +1,247 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: judge0
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: judge0-secret
+  namespace: judge0
+type: Opaque
+stringData:
+  SECRET_KEY_BASE: ""
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+  namespace: judge0
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:18
+          args: ["-c", "io_method=io_uring"]
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_USER
+              value: judge0
+            - name: POSTGRES_PASSWORD
+              value: judge0
+            - name: POSTGRES_DB
+              value: judge0
+          volumeMounts:
+            - name: postgres-data
+              mountPath: /var/lib/postgresql/data
+          readinessProbe:
+            exec:
+              command: ["pg_isready", "-U", "judge0"]
+            initialDelaySeconds: 10
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+      volumes:
+        - name: postgres-data
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  namespace: judge0
+spec:
+  selector:
+    app: postgres
+  ports:
+    - port: 5432
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis
+  namespace: judge0
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      containers:
+        - name: redis
+          image: redis:7
+          ports:
+            - containerPort: 6379
+          readinessProbe:
+            exec:
+              command: ["redis-cli", "ping"]
+            initialDelaySeconds: 5
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "250m"
+              memory: "256Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+  namespace: judge0
+spec:
+  selector:
+    app: redis
+  ports:
+    - port: 6379
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: judge0-server
+  namespace: judge0
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: judge0-server
+  template:
+    metadata:
+      labels:
+        app: judge0-server
+    spec:
+      containers:
+        - name: judge0-server
+          image: judge0/judge0:latest
+          command: ["./scripts/server"]
+          ports:
+            - containerPort: 2358
+          env:
+            - name: DATABASE_URL
+              value: postgres://judge0:judge0@postgres:5432/judge0
+            - name: REDIS_HOST
+              value: "redis"
+            - name: REDIS_PORT
+              value: "6379"
+            - name: REDIS_URL
+              value: "redis://redis:6379"
+            - name: RAILS_ENV
+              value: production
+            - name: DISABLE_DATABASE_ENVIRONMENT_CHECK
+              value: "1"
+            - name: MAINTENANCE_MESSAGE
+              value: ""
+            - name: SECRET_KEY_BASE
+              valueFrom:
+                secretKeyRef:
+                  name: judge0-secret
+                  key: SECRET_KEY_BASE
+          readinessProbe:
+            httpGet:
+              path: /languages
+              port: 2358
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+            limits:
+              cpu: "1"
+              memory: "1Gi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: judge0-server
+  namespace: judge0
+spec:
+  type: NodePort
+  selector:
+    app: judge0-server
+  ports:
+    - port: 2358
+      targetPort: 2358
+      nodePort: 32358
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: judge0-workers
+  namespace: judge0
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: judge0-workers
+  template:
+    metadata:
+      labels:
+        app: judge0-workers
+    spec:
+      containers:
+        - name: judge0-workers
+          image: judge0/judge0:latest
+          command: ["./scripts/workers"]
+          env:
+            - name: DATABASE_URL
+              value: postgres://judge0:judge0@postgres:5432/judge0
+            - name: REDIS_HOST
+              value: "redis"
+            - name: REDIS_PORT
+              value: "6379"
+            - name: REDIS_URL
+              value: "redis://redis:6379"
+            - name: RAILS_ENV
+              value: production
+            - name: DISABLE_DATABASE_ENVIRONMENT_CHECK
+              value: "1"
+            - name: MAINTENANCE_MESSAGE
+              value: ""
+            - name: SECRET_KEY_BASE
+              valueFrom:
+                secretKeyRef:
+                  name: judge0-secret
+                  key: SECRET_KEY_BASE
+          securityContext:
+            privileged: true
+            runAsUser: 0
+          volumeMounts:
+            - name: cgroup
+              mountPath: /sys/fs/cgroup
+            - name: isolate
+              mountPath: /var/local/lib/isolate
+            - name: box
+              mountPath: /box
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "512Mi"
+            limits:
+              cpu: "2"
+              memory: "1Gi"
+      volumes:
+        - name: cgroup
+          hostPath:
+            path: /sys/fs/cgroup
+        - name: isolate
+          emptyDir: {}
+        - name: box
+          emptyDir: {}
