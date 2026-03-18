@@ -199,7 +199,7 @@ A `Dockerfile` is included for containerized deployment. It is based on the offi
 1. **Clone and Configure**:
 
    ```bash
-   git clone https://github.com/sarthak3d/LLM-code-Service.git
+   git clone https://github.com/Ishan-Pandita/LLM-code-Service.git
    cd LLM-code-Service
    cp .env.example .env
    ```
