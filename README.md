@@ -25,15 +25,16 @@ The **ModuleRegistry** is a singleton that maps `module_id` strings to `BaseModu
 
 Evaluates code against a configurable set of coding best practice rules. Uses a **one-rule-per-generation** strategy: each rule is evaluated in a separate LLM call, and all calls are dispatched in parallel using `asyncio.gather`. This eliminates cross-rule contamination and JSON drift that occurs when evaluating multiple rules in a single prompt.
 
-| Endpoint | Method | Description |
-|---|---|---|
-| `/api/v1/modules/best_practices/rules` | `GET` | List all predefined rules (filterable by `?category=`) |
-| `/api/v1/modules/best_practices/rules/{rule_id}` | `GET` | Get a specific rule by ID |
-| `/api/v1/modules/best_practices/categories` | `GET` | List all available rule categories |
-| `/api/v1/modules/best_practices/evaluate` | `POST` | Evaluate code against selected rules |
-| `/api/v1/modules/best_practices/health` | `GET` | Module health check |
+| Endpoint                                         | Method | Description                                            |
+| ------------------------------------------------ | ------ | ------------------------------------------------------ |
+| `/api/v1/modules/best_practices/rules`           | `GET`  | List all predefined rules (filterable by `?category=`) |
+| `/api/v1/modules/best_practices/rules/{rule_id}` | `GET`  | Get a specific rule by ID                              |
+| `/api/v1/modules/best_practices/categories`      | `GET`  | List all available rule categories                     |
+| `/api/v1/modules/best_practices/evaluate`        | `POST` | Evaluate code against selected rules                   |
+| `/api/v1/modules/best_practices/health`          | `GET`  | Module health check                                    |
 
 **Evaluate request body:**
+
 ```json
 {
   "language": "python",
@@ -51,6 +52,7 @@ Evaluates code against a configurable set of coding best practice rules. Uses a 
 ```
 
 **Response:**
+
 ```json
 {
   "overall_status": "2/3",
@@ -76,13 +78,14 @@ Accepts code that may contain errors and iteratively fixes it by running a **com
 
 This one-error-at-a-time approach produces more accurate fixes and generates a detailed fix history with severity scores and explanations — useful for educational tooling.
 
-| Endpoint | Method | Description |
-|---|---|---|
-| `/api/v1/modules/evaluation_service/languages` | `GET` | List languages supported by the compiler |
-| `/api/v1/modules/evaluation_service/evaluate` | `POST` | Evaluate and iteratively fix code |
-| `/api/v1/modules/evaluation_service/health` | `GET` | Compiler connectivity check |
+| Endpoint                                       | Method | Description                              |
+| ---------------------------------------------- | ------ | ---------------------------------------- |
+| `/api/v1/modules/evaluation_service/languages` | `GET`  | List languages supported by the compiler |
+| `/api/v1/modules/evaluation_service/evaluate`  | `POST` | Evaluate and iteratively fix code        |
+| `/api/v1/modules/evaluation_service/health`    | `GET`  | Compiler connectivity check              |
 
 **Evaluate request body:**
+
 ```json
 {
   "code": "def add(a, b)\n    return a + b",
@@ -96,6 +99,7 @@ This one-error-at-a-time approach produces more accurate fixes and generates a d
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -106,7 +110,11 @@ This one-error-at-a-time approach produces more accurate fixes and generates a d
   "fixes": [
     {
       "iteration": 1,
-      "error": { "error_type": "SyntaxError", "message": "invalid syntax", "line_number": 1 },
+      "error": {
+        "error_type": "SyntaxError",
+        "message": "invalid syntax",
+        "line_number": 1
+      },
       "original_code_snippet": "def add(a, b)",
       "fixed_code_snippet": "def add(a, b):",
       "explanation": "Missing colon at end of function definition.",
@@ -123,13 +131,13 @@ This one-error-at-a-time approach produces more accurate fixes and generates a d
 
 - Python 3.10+
 - An NVIDIA GPU with CUDA support (required by vLLM)
-- The [compiler service](./compiler/README.md) deployed and reachable (required by `evaluation_service` module) 
+- The [compiler service](./compiler/README.md) deployed and reachable (required by `evaluation_service` module)
 
 ### Installation
 
 ```bash
 # Clone the repository
-git clone https://github.com/sarthak3d/LLM-code-Service.git
+git clone https://github.com/Ishan-Pandita/LLM-code-Service.git
 cd LLM-code-Service
 
 # Install the service and its dependencies
@@ -155,15 +163,15 @@ cp .env.example .env
 
 All settings use the `LLM_SERVICE_` prefix and can also be passed as environment variables. The most important ones:
 
-| Variable | Default | Description |
-|---|---|---|
-| `LLM_SERVICE_MODEL_ID` | `zai-org/GLM-4.7-Flash` | Hugging Face model identifier |
-| `LLM_SERVICE_TENSOR_PARALLEL_SIZE` | `1` | Number of GPUs (set to your GPU count) |
-| `LLM_SERVICE_GPU_MEMORY_UTILIZATION` | `0.90` | Fraction of GPU memory to use |
-| `LLM_SERVICE_MAX_MODEL_LEN` | `32768` | Maximum context window length |
-| `LLM_SERVICE_QUANTIZATION` | *(unset)* | Optional: `awq`, `gptq`, `fp8` |
-| `LLM_SERVICE_COMPILER_BASE_URL` | `http://localhost:32358` | URL of the Judge0 compiler service |
-| `LLM_SERVICE_API_PORT` | `8000` | Port for the FastAPI server |
+| Variable                             | Default                  | Description                            |
+| ------------------------------------ | ------------------------ | -------------------------------------- |
+| `LLM_SERVICE_MODEL_ID`               | `zai-org/GLM-4.7-Flash`  | Hugging Face model identifier          |
+| `LLM_SERVICE_TENSOR_PARALLEL_SIZE`   | `1`                      | Number of GPUs (set to your GPU count) |
+| `LLM_SERVICE_GPU_MEMORY_UTILIZATION` | `0.90`                   | Fraction of GPU memory to use          |
+| `LLM_SERVICE_MAX_MODEL_LEN`          | `32768`                  | Maximum context window length          |
+| `LLM_SERVICE_QUANTIZATION`           | _(unset)_                | Optional: `awq`, `gptq`, `fp8`         |
+| `LLM_SERVICE_COMPILER_BASE_URL`      | `http://localhost:32358` | URL of the Judge0 compiler service     |
+| `LLM_SERVICE_API_PORT`               | `8000`                   | Port for the FastAPI server            |
 
 ### Running the service
 
@@ -189,6 +197,7 @@ A `Dockerfile` is included for containerized deployment. It is based on the offi
 ### Quick Start
 
 1. **Clone and Configure**:
+
    ```bash
    git clone https://github.com/sarthak3d/LLM-code-Service.git
    cd LLM-code-Service
@@ -196,6 +205,7 @@ A `Dockerfile` is included for containerized deployment. It is based on the offi
    ```
 
 2. **Build the Image**:
+
    ```bash
    docker build -t llm-service:latest .
    ```
@@ -227,14 +237,14 @@ See `llm_service/modules/base.py` for the full interface contract and inline doc
 
 ## Stack
 
-| Layer | Technology |
-|---|---|
-| Inference | [vLLM](https://github.com/vllm-project/vllm) (AsyncLLMEngine) |
-| Model | [GLM-4.7-Flash](https://huggingface.co/zai-org/GLM-4.7-Flash) (default, configurable) |
-| API | [FastAPI](https://fastapi.tiangolo.com/) + [Uvicorn](https://www.uvicorn.org/) |
-| Validation | [Pydantic v2](https://docs.pydantic.dev/latest/) |
-| Compiler | [Judge0](https://judge0.com/) on Kubernetes |
-| Python | 3.10+ |
+| Layer      | Technology                                                                            |
+| ---------- | ------------------------------------------------------------------------------------- |
+| Inference  | [vLLM](https://github.com/vllm-project/vllm) (AsyncLLMEngine)                         |
+| Model      | [GLM-4.7-Flash](https://huggingface.co/zai-org/GLM-4.7-Flash) (default, configurable) |
+| API        | [FastAPI](https://fastapi.tiangolo.com/) + [Uvicorn](https://www.uvicorn.org/)        |
+| Validation | [Pydantic v2](https://docs.pydantic.dev/latest/)                                      |
+| Compiler   | [Judge0](https://judge0.com/) on Kubernetes                                           |
+| Python     | 3.10+                                                                                 |
 
 ## Related
 
